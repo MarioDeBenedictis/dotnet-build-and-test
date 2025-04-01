@@ -14,9 +14,15 @@ inputs:
     required: true
     default: '1000'
   testFolder:
-    description: 'Relative path to the test project folder'
+    description: 'The folder where the tests reside'
     required: true
-    default: 'YourTestFolderHere'   
+  migrationsFolder:
+    description: 'The folder for migration commands (defaults to testFolder if not provided)'
+    required: false
+  envName:
+    description: 'The ASPNETCORE_ENVIRONMENT to use (defaults to Test)'
+    required: false
+    default: 'Test'
 
 # Define your outputs here.
 outputs:

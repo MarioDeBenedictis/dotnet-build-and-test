@@ -9,23 +9,54 @@ branding:
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
-    required: true
-    default: '1000'
   testFolder:
-    description: 'The folder where the tests reside'
+    description: 'Path to the test project folder'
     required: true
   migrationsFolder:
-    description: 'The folder for migration commands (defaults to testFolder if not provided)'
+    description: 'Path to the migrations folder (default: testFolder)'
     required: false
   envName:
-    description: 'The ASPNETCORE_ENVIRONMENT to use (defaults to Test)'
+    description: 'Environment name for ASP.NET Core'
     required: false
     default: 'Test'
+  skipMigrations:
+    description: 'Skip applying migrations'
+    required: false
+    default: 'false'
+  useGlobalDotnetEf:
+    description: 'Use globally installed dotnet-ef instead of local'
+    required: false
+    default: 'false'
+  recreateDatabase:
+    description: 'Drop and recreate the database before running tests'
+    required: false
+    default: 'false'
+  resetGitStrategy:
+    description: 'Git reset strategy (soft, hard, mixed, or none)'
+    required: false
+    default: 'soft'
+  seedDataScript:
+    description: 'Path to seed data script if required'
+    required: false
+  testFormat:
+    description: 'Format for test results (e.g., trx, html, json)'
+    required: false
+    default: 'html'
+  parallelTests:
+    description: 'Enable parallel test execution'
+    required: false
+    default: 'false'
+  testTimeout:
+    description: 'Test timeout in seconds'
+    required: false
+    default: '60'
+  customDotnetArgs:
+    description: 'Custom arguments for dotnet build'
+    required: false
 
-# Define your outputs here.
 outputs:
+  lastMigration:
+    description: 'The last applied database migration'
   time:
     description: Your output description here
 

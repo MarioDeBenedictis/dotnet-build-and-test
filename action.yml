@@ -1,6 +1,6 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: 'Dotnet Build and Test'
+description: 'Builds a .NET project, runs tests and handles EF Core migrations including rollback on failure'
+author: Mario De Benedictis
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
@@ -13,6 +13,10 @@ inputs:
     description: Your input description here
     required: true
     default: '1000'
+  testFolder:
+    description: 'Relative path to the test project folder'
+    required: true
+    default: 'YourTestFolderHere'   
 
 # Define your outputs here.
 outputs:
@@ -22,3 +26,4 @@ outputs:
 runs:
   using: node20
   main: dist/index.js
+

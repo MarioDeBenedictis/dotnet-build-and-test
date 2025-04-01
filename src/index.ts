@@ -6,6 +6,18 @@ async function run(): Promise<void> {
   let lastMigration = ''
   // We'll capture stdout when listing migrations.
   let migrationListStdout = ''
+  const token = core.getInput('token')
+
+  // If a token is provided, configure git to use it for authentication.
+  if (token) {
+    core.info('Configuring git to use provided token for GitHub access.')
+    await exec.exec('git', [
+      'config',
+      '--global',
+      `url.https://${token}@github.com/.insteadOf`,
+      'https://github.com/'
+    ])
+  }
 
   try {
     // Cleanup: Restore files
@@ -26,7 +38,7 @@ async function run(): Promise<void> {
     // Get input parameters
     const testFolder = core.getInput('testFolder')
     // migrationsFolder defaults to testFolder if not provided
-    const migrationsFolder = core.getInput('migrationsFolder')
+    const migrationsFolder = core.getInput('migrationsFolder') || testFolder
     // Environment variable for .NET (default to 'Test')
     const envName = core.getInput('envName') || 'Test'
 

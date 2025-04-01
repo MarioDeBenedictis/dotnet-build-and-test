@@ -9,6 +9,10 @@ branding:
 
 # Define your inputs here.
 inputs:
+  token:
+    description: 'Token to access private repositories if needed'
+    required: false
+    default: ${{ github.token }}
   milliseconds:
     description: Your input description here
     required: true

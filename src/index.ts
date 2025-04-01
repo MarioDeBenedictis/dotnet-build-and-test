@@ -2,12 +2,16 @@ import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 
 export async function run(): Promise<void> {
+  const startTime = Date.now()
+  core.info(
+    `[START] GitHub Action execution started at ${new Date().toISOString()}`
+  )
+
   let lastMigration = ''
   let appliedMigrations = ''
   let hasPendingMigrations = false
-  const startTime = Date.now()
 
-  // Declare variables that need to be used in both try and catch blocks
+  // Variables to store GitHub Action inputs
   let testFolder = ''
   let migrationsFolder = ''
   let envName = 'Test'
@@ -22,25 +26,26 @@ export async function run(): Promise<void> {
   let customDotnetArgs = ''
 
   try {
-    // Cleanup
-    core.info('Performing cleanup...')
+    core.info(`[STEP] Cleaning up the workspace...`)
     await exec.exec('git', ['restore', '.'])
+    core.info('[STATUS] Workspace restored.')
 
-    // Check .NET SDK version
-    core.info('Checking .NET SDK version...')
+    core.info(`[STEP] Checking .NET SDK version...`)
     await exec.exec('dotnet', ['--version'])
+    core.info('[STATUS] .NET SDK version verified.')
 
-    // Restore dependencies
-    core.info('Restoring dependencies...')
+    core.info(`[STEP] Restoring dependencies...`)
     await exec.exec('dotnet', ['restore'])
+    core.info('[STATUS] Dependencies restored.')
 
-    // Build the project
-    core.info('Building the project...')
+    core.info(`[STEP] Building the project...`)
     customDotnetArgs = core.getInput('customDotnetArgs') || ''
     const buildArgs = ['build', ...customDotnetArgs.split(' ').filter(Boolean)]
     await exec.exec('dotnet', buildArgs)
+    core.info('[STATUS] Project built successfully.')
 
-    // Get inputs for tests and migrations
+    // Retrieve GitHub Action inputs
+    core.info(`[STEP] Retrieving GitHub Action Inputs...`)
     testFolder = core.getInput('testFolder')
     migrationsFolder = core.getInput('migrationsFolder') || testFolder
     envName = core.getInput('envName') || 'Test'
@@ -53,32 +58,30 @@ export async function run(): Promise<void> {
     parallelTestExecution = core.getInput('parallelTests') === 'true'
     testTimeout = core.getInput('testTimeout') || '60'
 
-    // Log configuration
-    core.info(`Environment: ${envName}`)
-    core.info(`Test Folder: ${testFolder}`)
-    core.info(`Migrations Folder: ${migrationsFolder}`)
-    core.info(`Skip Migrations: ${skipMigrations}`)
-    core.info(`Use Global dotnet-ef: ${useGlobalDotnetEf}`)
-    core.info(`Recreate Database: ${recreateDatabase}`)
-    core.info(`Reset Git Strategy: ${resetGitStrategy}`)
-    core.info(`Seed Data Script: ${seedDataScript}`)
+    core.info(`[INFO] Configuration Loaded:
+    - Environment: ${envName}
+    - Test Folder: ${testFolder}
+    - Migrations Folder: ${migrationsFolder}
+    - Skip Migrations: ${skipMigrations}
+    - Use Global dotnet-ef: ${useGlobalDotnetEf}
+    - Recreate Database: ${recreateDatabase}
+    - Reset Git Strategy: ${resetGitStrategy}
+    - Seed Data Script: ${seedDataScript}`)
 
-    // Migration process
     if (!skipMigrations) {
-      // Install local dotnet-ef if not using global version
       if (!useGlobalDotnetEf) {
-        core.info('Installing local dotnet-ef...')
+        core.info('[STEP] Installing local dotnet-ef...')
         await exec.exec('dotnet', ['new', 'tool-manifest', '--force'], {
           cwd: migrationsFolder
         })
         await exec.exec('dotnet', ['tool', 'install', '--local', 'dotnet-ef'], {
           cwd: migrationsFolder
         })
+        core.info('[STATUS] Local dotnet-ef installed.')
       }
 
-      // Check applied migrations
-      core.info('Checking applied migrations...')
-      const options: exec.ExecOptions = {
+      core.info('[STEP] Checking applied migrations...')
+      const appliedOptions: exec.ExecOptions = {
         cwd: migrationsFolder,
         listeners: {
           stdout: (data: Buffer) => {
@@ -89,18 +92,18 @@ export async function run(): Promise<void> {
       await exec.exec(
         'dotnet',
         ['ef', 'migrations', 'list', '--applied'],
-        options
+        appliedOptions
       )
-
       const migrations = appliedMigrations
         .trim()
         .split('\n')
         .filter((line) => line.trim() !== '')
-      lastMigration = migrations[migrations.length - 1] || ''
-      core.info(`Last Applied Migration: ${lastMigration}`)
+      lastMigration =
+        migrations.length > 0 ? migrations[migrations.length - 1] : ''
+      core.info(`[STATUS] Last applied migration: ${lastMigration}`)
       core.setOutput('lastMigration', lastMigration)
 
-      // Check for pending migrations by creating a new options object
+      core.info('[STEP] Checking for pending migrations...')
       let pendingMigrations = ''
       const pendingOptions: exec.ExecOptions = {
         cwd: migrationsFolder,
@@ -117,33 +120,34 @@ export async function run(): Promise<void> {
         .some((m) => !m.includes('[applied]'))
 
       if (hasPendingMigrations) {
-        core.info('Detected pending migrations, applying...')
+        core.info('[STATUS] Pending migrations detected.')
         if (recreateDatabase) {
-          core.info('Dropping and recreating the database...')
+          core.info('[STEP] Dropping and recreating database...')
           await exec.exec('dotnet', ['ef', 'database', 'drop', '--force'], {
             cwd: migrationsFolder
           })
+          core.info('[STATUS] Database recreated.')
         }
-        // Update database using applied migrations
+        core.info('[STEP] Applying migrations...')
         await exec.exec('dotnet', ['ef', 'database', 'update'], {
           cwd: migrationsFolder,
           env: { ...process.env, ASPNETCORE_ENVIRONMENT: envName }
         })
+        core.info('[STATUS] Migrations applied.')
 
-        // Seed the database if a seed script is provided
         if (seedDataScript) {
-          core.info(`Seeding database using: ${seedDataScript}`)
+          core.info(`[STEP] Running seed data script: ${seedDataScript}`)
           await exec.exec('dotnet', ['run', '--project', seedDataScript], {
             env: { ...process.env, ASPNETCORE_ENVIRONMENT: envName }
           })
+          core.info('[STATUS] Seed data applied.')
         }
       } else {
-        core.info('No pending migrations detected.')
+        core.info('[STATUS] No pending migrations.')
       }
     }
 
-    // Run API tests
-    core.info('Running API Tests...')
+    core.info('[STEP] Running API tests...')
     const testArgs = [
       'test',
       '--logger',
@@ -157,41 +161,34 @@ export async function run(): Promise<void> {
       'detailed'
     ]
     if (parallelTestExecution) testArgs.push('--parallel')
-    if (testTimeout) {
-      // Split timeout flag and its value into separate array elements.
-      testArgs.push('--timeout', testTimeout)
-    }
+    if (testTimeout) testArgs.push('--timeout', testTimeout)
     await exec.exec('dotnet', testArgs, { cwd: testFolder })
-
     core.info(
-      `All tests passed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`
+      `[STATUS] All tests passed in ${((Date.now() - startTime) / 1000).toFixed(2)} seconds.`
     )
   } catch (error) {
-    core.error('An error occurred.')
-    core.error(`Error Details: ${error}`)
+    core.error('[ERROR] An error occurred.')
+    core.error(`[ERROR DETAILS] ${error}`)
 
-    // Attempt rollback if necessary
     if (!skipMigrations && lastMigration) {
-      core.error('Attempting rollback...')
+      core.error('[STEP] Attempting rollback...')
       try {
         await exec.exec('dotnet', ['ef', 'database', 'update', lastMigration], {
           cwd: migrationsFolder,
           env: { ...process.env, ASPNETCORE_ENVIRONMENT: envName }
         })
-        core.info('Rollback successful.')
+        core.info('[STATUS] Rollback successful.')
       } catch (rollbackError) {
-        core.error(`Rollback failed: ${rollbackError}`)
+        core.error(`[ERROR] Rollback failed: ${rollbackError}`)
       }
     }
 
-    // Reset repository based on the git reset strategy
-    core.error('Resetting repository...')
+    core.error('[STEP] Resetting repository...')
     if (resetGitStrategy !== 'none') {
       await exec.exec('git', ['reset', '--' + resetGitStrategy])
     }
 
-    core.setFailed(`Action failed: ${error}`)
-    // Propagate the error so tests can catch it
+    core.setFailed(`[FAILED] Action failed: ${error}`)
     throw error
   }
 }

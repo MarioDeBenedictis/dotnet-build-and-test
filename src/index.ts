@@ -6,19 +6,6 @@ async function run(): Promise<void> {
   let lastMigration = ''
   // We'll capture stdout when listing migrations.
   let migrationListStdout = ''
-  const token = core.getInput('token')
-
-  // If a token is provided, configure git to use it for authentication.
-  if (token) {
-    core.info('Configuring git to use provided token for GitHub access.')
-    await exec.exec('git', [
-      'config',
-      '--global',
-      `url.https://${token}@github.com/.insteadOf`,
-      'https://github.com/'
-    ])
-  }
-
   try {
     // Cleanup: Restore files
     core.info('Performing cleanup (git restore)...')

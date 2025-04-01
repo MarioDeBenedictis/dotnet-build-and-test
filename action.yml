@@ -9,6 +9,9 @@ branding:
 
 # Define your inputs here.
 inputs:
+  milliseconds:
+    default: "1000"
+    description: template thing.
   testFolder:
     description: 'Path to the test project folder'
     required: true

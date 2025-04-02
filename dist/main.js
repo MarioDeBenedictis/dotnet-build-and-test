@@ -8,7 +8,7 @@ export async function run() {
     core.info(`[START] GitHub Action execution started at ${new Date().toISOString()}`);
     try {
         // Retrieve inputs.
-        const { testFolder, envName, skipMigrations, useGlobalDotnetEf } = getInputs();
+        const { testFolder, envName, skipMigrations, useGlobalDotnetEf, migrationsFolder } = getInputs();
         // Restore workspace.
         await restoreWorkspace();
         // Verify .NET SDK and restore dependencies.
@@ -16,7 +16,7 @@ export async function run() {
         await restoreDependencies();
         // Process migrations if not skipped.
         if (!skipMigrations) {
-            await processMigrations(envName, useGlobalDotnetEf);
+            await processMigrations(envName, useGlobalDotnetEf, migrationsFolder);
         }
         else {
             core.info('Skipping migrations as requested.');

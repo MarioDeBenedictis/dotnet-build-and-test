@@ -12,8 +12,13 @@ export async function run(): Promise<void> {
 
   try {
     // Retrieve inputs.
-    const { testFolder, envName, skipMigrations, useGlobalDotnetEf } =
-      getInputs()
+    const {
+      testFolder,
+      envName,
+      skipMigrations,
+      useGlobalDotnetEf,
+      migrationsFolder
+    } = getInputs()
 
     // Restore workspace.
     await restoreWorkspace()
@@ -23,8 +28,9 @@ export async function run(): Promise<void> {
     await restoreDependencies()
 
     // Process migrations if not skipped.
+
     if (!skipMigrations) {
-      await processMigrations(envName, useGlobalDotnetEf)
+      await processMigrations(envName, useGlobalDotnetEf, migrationsFolder)
     } else {
       core.info('Skipping migrations as requested.')
     }

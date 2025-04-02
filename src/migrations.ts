@@ -3,13 +3,15 @@ import * as exec from '@actions/exec'
 
 export async function processMigrations(
   envName: string,
-  useGlobalDotnetEf: boolean
+  useGlobalDotnetEf: boolean,
+  migrationsFolder: string
 ): Promise<void> {
   let migrationOutput = ''
   const dotnetRoot = '/usr/share/dotnet' // location of the .NET runtime on Ubuntu
   const commonEnv = { ...process.env, DOTNET_ROOT: dotnetRoot }
 
   const migrationOptions: exec.ExecOptions = {
+    cwd: migrationsFolder,
     env: commonEnv,
     listeners: {
       stdout: (data: Buffer) => {
@@ -30,7 +32,7 @@ export async function processMigrations(
     await exec.exec(
       'dotnet',
       ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'],
-      { env: commonEnv }
+      { cwd: migrationsFolder, env: commonEnv }
     )
     core.info('dotnet-ef installed locally.')
     // Use the local installation.
@@ -38,7 +40,7 @@ export async function processMigrations(
     efArgs = ['migrations', 'list']
   }
 
-  core.info('Listing migrations...')
+  core.info(`Listing migrations in folder: ${migrationsFolder}...`)
   const result = await exec.getExecOutput(efCmd, efArgs, migrationOptions)
   core.info(result.stdout)
 
@@ -47,8 +49,9 @@ export async function processMigrations(
     core.info('Pending migrations detected. Applying migrations...')
     const updateArgs = useGlobalDotnetEf
       ? ['database', 'update']
-      : ['database', 'update'] // same args in either case
+      : ['database', 'update'] // same arguments since the tool is either global or local
     await exec.getExecOutput(efCmd, updateArgs, {
+      cwd: migrationsFolder,
       env: { ...commonEnv, ASPNETCORE_ENVIRONMENT: envName }
     })
     core.info('Migrations applied.')

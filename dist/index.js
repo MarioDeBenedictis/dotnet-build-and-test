@@ -27248,15 +27248,23 @@ var coreExports = requireCore();
 
 function getInputs() {
     const testFolder = coreExports.getInput('testFolder') || './tests';
+    const migrationsFolder = coreExports.getInput('migrationsFolder');
     const envName = coreExports.getInput('envName') || 'Test';
     const skipMigrations = coreExports.getInput('skipMigrations') === 'true';
     const useGlobalDotnetEf = coreExports.getInput('useGlobalDotnetEf') === 'true';
     coreExports.info(`Loaded inputs:
     - Test Folder: ${testFolder}
+    - Migration folder: ${migrationsFolder}
     - Environment: ${envName}
     - Skip Migrations: ${skipMigrations}
     - Use Global dotnet-ef: ${useGlobalDotnetEf}`);
-    return { testFolder, envName, skipMigrations, useGlobalDotnetEf };
+    return {
+        testFolder,
+        migrationsFolder,
+        envName,
+        skipMigrations,
+        useGlobalDotnetEf
+    };
 }
 
 var execExports = requireExec();
@@ -27278,11 +27286,12 @@ async function restoreDependencies() {
     coreExports.info('Dependencies restored.');
 }
 
-async function processMigrations(envName, useGlobalDotnetEf) {
+async function processMigrations(envName, useGlobalDotnetEf, migrationsFolder) {
     let migrationOutput = '';
     const dotnetRoot = '/usr/share/dotnet'; // location of the .NET runtime on Ubuntu
     const commonEnv = { ...process.env, DOTNET_ROOT: dotnetRoot };
     const migrationOptions = {
+        cwd: migrationsFolder,
         env: commonEnv,
         listeners: {
             stdout: (data) => {
@@ -27299,13 +27308,13 @@ async function processMigrations(envName, useGlobalDotnetEf) {
     else {
         // Install dotnet-ef locally into ./.dotnetTools if not already installed.
         coreExports.info('Installing dotnet-ef tool locally...');
-        await execExports.exec('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { env: commonEnv });
+        await execExports.exec('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder, env: commonEnv });
         coreExports.info('dotnet-ef installed locally.');
         // Use the local installation.
         efCmd = './.dotnetTools/dotnet-ef';
         efArgs = ['migrations', 'list'];
     }
-    coreExports.info('Listing migrations...');
+    coreExports.info(`Listing migrations in folder: ${migrationsFolder}...`);
     const result = await execExports.getExecOutput(efCmd, efArgs, migrationOptions);
     coreExports.info(result.stdout);
     // If the output does not contain the "[applied]" marker, assume there are pending migrations.
@@ -27313,8 +27322,9 @@ async function processMigrations(envName, useGlobalDotnetEf) {
         coreExports.info('Pending migrations detected. Applying migrations...');
         const updateArgs = useGlobalDotnetEf
             ? ['database', 'update']
-            : ['database', 'update']; // same args in either case
+            : ['database', 'update']; // same arguments since the tool is either global or local
         await execExports.getExecOutput(efCmd, updateArgs, {
+            cwd: migrationsFolder,
             env: { ...commonEnv, ASPNETCORE_ENVIRONMENT: envName }
         });
         coreExports.info('Migrations applied.');
@@ -27340,7 +27350,7 @@ async function run() {
     coreExports.info(`[START] GitHub Action execution started at ${new Date().toISOString()}`);
     try {
         // Retrieve inputs.
-        const { testFolder, envName, skipMigrations, useGlobalDotnetEf } = getInputs();
+        const { testFolder, envName, skipMigrations, useGlobalDotnetEf, migrationsFolder } = getInputs();
         // Restore workspace.
         await restoreWorkspace();
         // Verify .NET SDK and restore dependencies.
@@ -27348,7 +27358,7 @@ async function run() {
         await restoreDependencies();
         // Process migrations if not skipped.
         if (!skipMigrations) {
-            await processMigrations(envName, useGlobalDotnetEf);
+            await processMigrations(envName, useGlobalDotnetEf, migrationsFolder);
         }
         else {
             coreExports.info('Skipping migrations as requested.');

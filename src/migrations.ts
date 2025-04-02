@@ -7,7 +7,7 @@ export async function processMigrations(
   migrationsFolder: string
 ): Promise<void> {
   let migrationOutput = ''
-  const dotnetRoot = '/usr/share/dotnet' // location of the .NET runtime on Ubuntu
+  const dotnetRoot = '/usr/share/dotnet' // typical location for .NET on Ubuntu
   const commonEnv = { ...process.env, DOTNET_ROOT: dotnetRoot }
 
   const migrationOptions: exec.ExecOptions = {
@@ -27,7 +27,6 @@ export async function processMigrations(
     efCmd = 'dotnet-ef'
     efArgs = ['migrations', 'list']
   } else {
-    // Install dotnet-ef locally into ./.dotnetTools if not already installed.
     core.info('Installing dotnet-ef tool locally...')
     await exec.exec(
       'dotnet',
@@ -35,7 +34,6 @@ export async function processMigrations(
       { cwd: migrationsFolder, env: commonEnv }
     )
     core.info('dotnet-ef installed locally.')
-    // Use the local installation.
     efCmd = './.dotnetTools/dotnet-ef'
     efArgs = ['migrations', 'list']
   }
@@ -44,12 +42,9 @@ export async function processMigrations(
   const result = await exec.getExecOutput(efCmd, efArgs, migrationOptions)
   core.info(result.stdout)
 
-  // If the output does not contain the "[applied]" marker, assume there are pending migrations.
   if (migrationOutput.indexOf('[applied]') === -1) {
     core.info('Pending migrations detected. Applying migrations...')
-    const updateArgs = useGlobalDotnetEf
-      ? ['database', 'update']
-      : ['database', 'update'] // same arguments since the tool is either global or local
+    const updateArgs = ['database', 'update']
     await exec.getExecOutput(efCmd, updateArgs, {
       cwd: migrationsFolder,
       env: { ...commonEnv, ASPNETCORE_ENVIRONMENT: envName }

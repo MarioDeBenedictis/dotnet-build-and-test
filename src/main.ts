@@ -1,9 +1,8 @@
-// main.ts
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
 
 /**
- * Executes the GitHub Action workflow defined in main.ts.
+ * Main function executing the GitHub Action logic.
  */
 export async function run(): Promise<void> {
   core.info(
@@ -11,43 +10,36 @@ export async function run(): Promise<void> {
   )
 
   try {
-    // Retrieve GitHub Action Inputs with default values
-    const msInput: string = core.getInput('milliseconds') || '1000'
+    // Retrieve GitHub Action inputs with default values.
     const testFolder: string = core.getInput('testFolder') || './tests'
     const envName: string = core.getInput('envName') || 'Test'
     const skipMigrations: boolean = core.getInput('skipMigrations') === 'true'
     const useGlobalDotnetEf: boolean =
       core.getInput('useGlobalDotnetEf') === 'true'
-    const ms: number = parseInt(msInput, 10)
 
-    core.info(`[INFO] Loaded Inputs:
-  - Wait Time: ${ms}ms
+    core.info(`Loaded inputs:
   - Test Folder: ${testFolder}
   - Environment: ${envName}
   - Skip Migrations: ${skipMigrations}
   - Use Global dotnet-ef: ${useGlobalDotnetEf}`)
 
-    // Determine which command to use for EF commands
-    const efCmd = useGlobalDotnetEf ? 'dotnet-ef' : 'dotnet'
-    const efArgsPrefix = useGlobalDotnetEf ? [] : ['ef']
-
-    // Clean up the workspace
-    core.info(`[STEP] Cleaning up the workspace...`)
+    // Restore workspace.
+    core.info('Restoring workspace...')
     await exec.exec('git', ['restore', '.'])
-    core.info('[STATUS] Workspace restored.')
+    core.info('Workspace restored.')
 
-    // Check .NET SDK version
-    core.info(`[STEP] Checking .NET SDK version...`)
+    // Verify .NET SDK.
+    core.info('Verifying .NET SDK version...')
     await exec.exec('dotnet', ['--version'])
-    core.info('[STATUS] .NET SDK verified.')
+    core.info('.NET SDK verified.')
 
-    // Restore dependencies
-    core.info(`[STEP] Restoring dependencies...`)
+    // Restore dependencies.
+    core.info('Restoring dependencies...')
     await exec.exec('dotnet', ['restore'])
-    core.info('[STATUS] Dependencies restored.')
+    core.info('Dependencies restored.')
 
+    // Process migrations if not skipped.
     if (!skipMigrations) {
-      core.info(`[STEP] Checking pending migrations...`)
       let migrationOutput = ''
       const migrationOptions: exec.ExecOptions = {
         listeners: {
@@ -57,51 +49,44 @@ export async function run(): Promise<void> {
         }
       }
 
-      // List migrations using the appropriate command
-      await exec.exec(
-        efCmd,
-        [...efArgsPrefix, 'migrations', 'list'],
-        migrationOptions
-      )
+      // Select the proper command for migrations.
+      const efCmd = useGlobalDotnetEf ? 'dotnet-ef' : 'dotnet'
+      const efArgs = useGlobalDotnetEf
+        ? ['migrations', 'list']
+        : ['ef', 'migrations', 'list']
+      core.info('Listing migrations...')
+      await exec.exec(efCmd, efArgs, migrationOptions)
 
-      // Process the migration list line by line
-      const migrationLines = migrationOutput
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter((line) => line !== '')
-
-      // Determine if any migration does not have the "[applied]" marker
-      const pending = migrationLines.some((line) => !line.includes('[applied]'))
-
-      if (!pending) {
-        core.info('[STATUS] No pending migrations.')
-      } else {
-        core.info('[STEP] Applying migrations...')
-        await exec.exec(efCmd, [...efArgsPrefix, 'database', 'update'], {
+      // If output does not include the "[applied]" marker, assume pending migrations.
+      if (migrationOutput.indexOf('[applied]') === -1) {
+        core.info('Pending migrations detected. Applying migrations...')
+        const updateArgs = useGlobalDotnetEf
+          ? ['database', 'update']
+          : ['ef', 'database', 'update']
+        await exec.exec(efCmd, updateArgs, {
           env: { ...process.env, ASPNETCORE_ENVIRONMENT: envName }
         })
-        core.info('[STATUS] Migrations applied.')
+        core.info('Migrations applied.')
+      } else {
+        core.info('No pending migrations.')
       }
+    } else {
+      core.info('Skipping migrations as requested.')
     }
 
-    // Run tests
-    core.info(`[STEP] Running tests in ${testFolder}...`)
+    // Run tests.
+    core.info(`Running tests in ${testFolder}...`)
     await exec.exec('dotnet', ['test', testFolder, '--verbosity', 'detailed'])
-    core.info('[STATUS] Tests completed successfully.')
+    core.info('Tests completed successfully.')
 
-    // Set the output for the action
+    // Set an output (for example, the time when execution finished).
     core.setOutput('time', new Date().toTimeString())
-    core.info(`[SUCCESS] GitHub Action completed successfully.`)
+    core.info('GitHub Action completed successfully.')
   } catch (error) {
-    core.error('[ERROR] An unexpected error occurred.')
+    core.error('An error occurred during execution.')
     if (error instanceof Error) {
-      core.error(`[ERROR DETAILS] ${error.message}`)
+      core.error(`Error: ${error.message}`)
       core.setFailed(error.message)
     }
   }
-}
-
-// Run the action if this module is executed directly.
-if (require.main === module) {
-  run()
 }

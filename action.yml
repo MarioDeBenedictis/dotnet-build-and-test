@@ -1,5 +1,7 @@
 name: 'Dotnet Build and Test'
-description: 'Builds a .NET project, runs tests and handles EF Core migrations including rollback on failure'
+description:
+  'Builds a .NET project, runs tests and handles EF Core migrations including
+  rollback on failure'
 author: Mario De Benedictis
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
@@ -10,7 +12,7 @@ branding:
 # Define your inputs here.
 inputs:
   milliseconds:
-    default: "1000"
+    default: '1000'
     description: template thing.
   testFolder:
     description: 'Path to the test project folder'
@@ -66,4 +68,3 @@ outputs:
 runs:
   using: node20
   main: dist/index.js
-

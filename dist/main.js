@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
-import { getInputs } from './inputs';
-import { restoreWorkspace } from './workspace';
-import { verifyDotnetSDK, restoreDependencies } from './dotnet';
-import { processMigrations } from './migrations';
-import { runTests } from './tests';
+import { getInputs } from './inputs.js';
+import { restoreWorkspace } from './workspace.js';
+import { verifyDotnetSDK, restoreDependencies } from './dotnet.js';
+import { processMigrations } from './migrations.js';
+import { runTests } from './test.js';
 export async function run() {
     core.info(`[START] GitHub Action execution started at ${new Date().toISOString()}`);
     try {
@@ -35,7 +35,3 @@ export async function run() {
         }
     }
 }
-// Directly invoke run() if this module is executed directly.
-// if (require.main === module) {
-//   run()
-// }

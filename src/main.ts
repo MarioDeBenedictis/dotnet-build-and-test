@@ -43,8 +43,3 @@ export async function run(): Promise<void> {
     }
   }
 }
-
-// Directly invoke run() if this module is executed directly.
-// if (require.main === module) {
-//   run()
-// }

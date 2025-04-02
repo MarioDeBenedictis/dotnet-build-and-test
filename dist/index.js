@@ -27312,7 +27312,7 @@ async function processMigrations(envName, useGlobalDotnetEf) {
 
 async function runTests(testFolder) {
     coreExports.info(`Running tests in ${testFolder}...`);
-    await execExports.exec('bash', ['pwd']);
+    await execExports.getExecOutput('pwd');
     await execExports.exec('dotnet', ['test', testFolder, '--verbosity', 'detailed']);
     coreExports.info('Tests completed successfully.');
 }

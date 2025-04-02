@@ -11,9 +11,11 @@ branding:
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    default: '1000'
-    description: template thing.
+  getExecOutput:
+    description: 'Verbosity of the workflow'
+    required: true
+    default: "true"
+
   testFolder:
     description: 'Path to the test project folder'
     required: true
@@ -28,36 +30,53 @@ inputs:
     description: 'Skip applying migrations'
     required: false
     default: 'false'
+  skipTests:
+    description: 'Skip testing'
+    required: false
+    default: 'false'   
+  skipWorkspaceRestore:
+    description: 'Skip workspace restore'
+    required: false
+    default: 'false'  
+  skipDotnetRestore:
+    description: 'Skip dotnet restore'
+    required: false
+    default: 'false'  
+  skipVerifySdk:
+    description: 'Skip sdk verification'
+    required: false
+    default: 'false'  
   useGlobalDotnetEf:
     description: 'Use globally installed dotnet-ef instead of local'
     required: false
     default: 'false'
-  recreateDatabase:
-    description: 'Drop and recreate the database before running tests'
-    required: false
-    default: 'false'
-  resetGitStrategy:
-    description: 'Git reset strategy (soft, hard, mixed, or none)'
-    required: false
-    default: 'soft'
-  seedDataScript:
-    description: 'Path to seed data script if required'
-    required: false
-  testFormat:
-    description: 'Format for test results (e.g., trx, html, json)'
-    required: false
-    default: 'html'
-  parallelTests:
-    description: 'Enable parallel test execution'
-    required: false
-    default: 'false'
-  testTimeout:
-    description: 'Test timeout in seconds'
-    required: false
-    default: '60'
-  customDotnetArgs:
-    description: 'Custom arguments for dotnet build'
-    required: false
+
+  # recreateDatabase:
+  #   description: 'Drop and recreate the database before running tests'
+  #   required: false
+  #   default: 'false'
+  # resetGitStrategy:
+  #   description: 'Git reset strategy (soft, hard, mixed, or none)'
+  #   required: false
+  #   default: 'soft'
+  # seedDataScript:
+  #   description: 'Path to seed data script if required'
+  #   required: false
+  # testFormat:
+  #   description: 'Format for test results (e.g., trx, html, json)'
+  #   required: false
+  #   default: 'html'
+  # parallelTests:
+  #   description: 'Enable parallel test execution'
+  #   required: false
+  #   default: 'false'
+  # testTimeout:
+  #   description: 'Test timeout in seconds'
+  #   required: false
+  #   default: '60'
+  # customDotnetArgs:
+  #   description: 'Custom arguments for dotnet build'
+  #   required: false
 
 outputs:
   lastMigration:

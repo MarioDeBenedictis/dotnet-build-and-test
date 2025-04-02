@@ -14,18 +14,32 @@ export async function run(): Promise<void> {
     // Retrieve inputs.
     const {
       testFolder,
+      migrationsFolder,
       envName,
       skipMigrations,
-      useGlobalDotnetEf,
-      migrationsFolder
+      skipTests,
+      skipWorkspaceRestore,
+      skipDotnetRestore,
+      skipVerifySdk,
+      useGlobalDotnetEf
     } = getInputs()
 
     // Restore workspace.
-    await restoreWorkspace()
+    if (!skipWorkspaceRestore) {
+      await restoreWorkspace()
+    } else {
+      core.info('Skipping migrations as requested.')
+    }
 
     // Verify .NET SDK and restore dependencies.
-    await verifyDotnetSDK()
-    await restoreDependencies()
+    if (!skipVerifySdk) {
+      await verifyDotnetSDK()
+    } else {
+      core.info('Skipping migrations as requested.')
+    }
+    if (!skipDotnetRestore) {
+      await restoreDependencies()
+    }
 
     // Process migrations if not skipped.
 
@@ -36,10 +50,15 @@ export async function run(): Promise<void> {
     }
 
     // Run tests.
-    await runTests(testFolder)
+    if (!skipTests) {
+      await runTests(testFolder)
+    } else {
+      core.info('Skipping migrations as requested.')
+    }
 
     // Set an output (for example, the time when execution finished).
     core.setOutput('time', new Date().toTimeString())
+
     core.info('GitHub Action completed successfully.')
   } catch (error) {
     core.error('An error occurred during execution.')

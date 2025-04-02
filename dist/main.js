@@ -8,12 +8,24 @@ export async function run() {
     core.info(`[START] GitHub Action execution started at ${new Date().toISOString()}`);
     try {
         // Retrieve inputs.
-        const { testFolder, envName, skipMigrations, useGlobalDotnetEf, migrationsFolder } = getInputs();
+        const { testFolder, migrationsFolder, envName, skipMigrations, skipTests, skipWorkspaceRestore, skipDotnetRestore, skipVerifySdk, useGlobalDotnetEf } = getInputs();
         // Restore workspace.
-        await restoreWorkspace();
+        if (!skipWorkspaceRestore) {
+            await restoreWorkspace();
+        }
+        else {
+            core.info('Skipping migrations as requested.');
+        }
         // Verify .NET SDK and restore dependencies.
-        await verifyDotnetSDK();
-        await restoreDependencies();
+        if (!skipVerifySdk) {
+            await verifyDotnetSDK();
+        }
+        else {
+            core.info('Skipping migrations as requested.');
+        }
+        if (!skipDotnetRestore) {
+            await restoreDependencies();
+        }
         // Process migrations if not skipped.
         if (!skipMigrations) {
             await processMigrations(envName, useGlobalDotnetEf, migrationsFolder);
@@ -22,7 +34,12 @@ export async function run() {
             core.info('Skipping migrations as requested.');
         }
         // Run tests.
-        await runTests(testFolder);
+        if (!skipTests) {
+            await runTests(testFolder);
+        }
+        else {
+            core.info('Skipping migrations as requested.');
+        }
         // Set an output (for example, the time when execution finished).
         core.setOutput('time', new Date().toTimeString());
         core.info('GitHub Action completed successfully.');

@@ -27263,18 +27263,18 @@ var execExports = requireExec();
 
 async function restoreWorkspace() {
     coreExports.info('Restoring workspace...');
-    await execExports.exec('git', ['restore', '.']);
+    await execExports.getExecOutput('git', ['restore', '.']);
     coreExports.info('Workspace restored.');
 }
 
 async function verifyDotnetSDK() {
     coreExports.info('Verifying .NET SDK version...');
-    await execExports.exec('dotnet', ['--version']);
+    await execExports.getExecOutput('dotnet', ['--version']);
     coreExports.info('.NET SDK verified.');
 }
 async function restoreDependencies() {
     coreExports.info('Restoring dependencies...');
-    await execExports.exec('dotnet', ['restore']);
+    await execExports.getExecOutput('dotnet', ['restore']);
     coreExports.info('Dependencies restored.');
 }
 
@@ -27287,20 +27287,36 @@ async function processMigrations(envName, useGlobalDotnetEf) {
             }
         }
     };
-    // Choose the correct command and arguments based on user input.
-    const efCmd = useGlobalDotnetEf ? 'dotnet-ef' : 'dotnet';
-    const efArgs = useGlobalDotnetEf
-        ? ['migrations', 'list']
-        : ['ef', 'migrations', 'list'];
+    let efCmd;
+    let efArgs;
+    if (useGlobalDotnetEf) {
+        efCmd = 'dotnet-ef';
+        efArgs = ['migrations', 'list'];
+    }
+    else {
+        // Install dotnet-ef locally into ./.dotnetTools if not already installed.
+        coreExports.info('Installing dotnet-ef tool locally...');
+        await execExports.exec('dotnet', [
+            'tool',
+            'install',
+            'dotnet-ef',
+            '--tool-path',
+            './.dotnetTools'
+        ]);
+        coreExports.info('dotnet-ef installed locally.');
+        // Use the local installation.
+        efCmd = './.dotnetTools/dotnet-ef';
+        efArgs = ['migrations', 'list'];
+    }
     coreExports.info('Listing migrations...');
-    await execExports.exec(efCmd, efArgs, migrationOptions);
+    await execExports.getExecOutput(efCmd, efArgs, migrationOptions);
     // If the output does not contain the "[applied]" marker, assume there are pending migrations.
     if (migrationOutput.indexOf('[applied]') === -1) {
         coreExports.info('Pending migrations detected. Applying migrations...');
         const updateArgs = useGlobalDotnetEf
             ? ['database', 'update']
-            : ['ef', 'database', 'update'];
-        await execExports.exec(efCmd, updateArgs, {
+            : ['database', 'update']; // same args, since command is different (local tool)
+        await execExports.getExecOutput(efCmd, updateArgs, {
             env: { ...process.env, ASPNETCORE_ENVIRONMENT: envName }
         });
         coreExports.info('Migrations applied.');
@@ -27313,7 +27329,12 @@ async function processMigrations(envName, useGlobalDotnetEf) {
 async function runTests(testFolder) {
     coreExports.info(`Running tests in ${testFolder}...`);
     await execExports.getExecOutput('pwd');
-    await execExports.exec('dotnet', ['test', testFolder, '--verbosity', 'detailed']);
+    await execExports.getExecOutput('dotnet', [
+        'test',
+        testFolder,
+        '--verbosity',
+        'detailed'
+    ]);
     coreExports.info('Tests completed successfully.');
 }
 

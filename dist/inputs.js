@@ -6,7 +6,9 @@ export function getInputs() {
     const skipMigrations = core.getInput('skipMigrations') === 'true';
     const skipTests = core.getInput('skipTests') === 'true';
     const dotnetRoot = core.getInput('dotnetRoot') || 'usr/bin/dotnet';
-    const useGlobalDotnetEf = core.getInput('useGlobalDotnetEf') === 'false';
+    // const useGlobalDotnetEf: boolean =
+    //   core.getBooleanInput('useGlobalDotnetEf') === true
+    const useGlobalDotnetEf = core.getInput('useGlobalDotnetEf') === 'true';
     const skipWorkspaceRestore = core.getInput('skipWorkspaceRestore') === 'true';
     const skipDotnetRestore = core.getInput('skipDotnetRestore') === 'true';
     const skipVerifySdk = core.getInput('skipVerifySdk') === 'true';

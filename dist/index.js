@@ -27253,7 +27253,9 @@ function getInputs() {
     const skipMigrations = coreExports.getInput('skipMigrations') === 'true';
     const skipTests = coreExports.getInput('skipTests') === 'true';
     const dotnetRoot = coreExports.getInput('dotnetRoot') || 'usr/bin/dotnet';
-    const useGlobalDotnetEf = coreExports.getInput('useGlobalDotnetEf') === 'false';
+    // const useGlobalDotnetEf: boolean =
+    //   core.getBooleanInput('useGlobalDotnetEf') === true
+    const useGlobalDotnetEf = coreExports.getInput('useGlobalDotnetEf') === 'true';
     const skipWorkspaceRestore = coreExports.getInput('skipWorkspaceRestore') === 'true';
     const skipDotnetRestore = coreExports.getInput('skipDotnetRestore') === 'true';
     const skipVerifySdk = coreExports.getInput('skipVerifySdk') === 'true';

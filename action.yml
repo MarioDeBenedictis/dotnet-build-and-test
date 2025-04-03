@@ -14,7 +14,7 @@ inputs:
   getExecOutput:
     description: 'Verbosity of the workflow'
     required: true
-    default: "true"
+    default: 'true'
 
   testFolder:
     description: 'Path to the test project folder'
@@ -33,56 +33,50 @@ inputs:
   skipTests:
     description: 'Skip testing'
     required: false
-    default: 'false'   
+    default: 'false'
   skipWorkspaceRestore:
     description: 'Skip workspace restore'
     required: false
-    default: 'false'  
+    default: 'false'
   skipDotnetRestore:
     description: 'Skip dotnet restore'
     required: false
-    default: 'false'  
+    default: 'false'
   skipVerifySdk:
     description: 'Skip sdk verification'
     required: false
-    default: 'false'  
+    default: 'false'
   useGlobalDotnetEf:
     description: 'Use globally installed dotnet-ef instead of local'
     required: false
     default: 'false'
-
-  # recreateDatabase:
-  #   description: 'Drop and recreate the database before running tests'
-  #   required: false
-  #   default: 'false'
-  # resetGitStrategy:
-  #   description: 'Git reset strategy (soft, hard, mixed, or none)'
-  #   required: false
-  #   default: 'soft'
-  # seedDataScript:
-  #   description: 'Path to seed data script if required'
-  #   required: false
-  # testFormat:
-  #   description: 'Format for test results (e.g., trx, html, json)'
-  #   required: false
-  #   default: 'html'
-  # parallelTests:
-  #   description: 'Enable parallel test execution'
-  #   required: false
-  #   default: 'false'
-  # testTimeout:
-  #   description: 'Test timeout in seconds'
-  #   required: false
-  #   default: '60'
-  # customDotnetArgs:
-  #   description: 'Custom arguments for dotnet build'
-  #   required: false
+  dotnetRoot:
+    description: 'Environment name for ASP.NET Core'
+    required: false
+    default: '/usr/share/dotnet'
+  testFormat:
+    description: 'Format for test results (e.g., trx, html, json)'
+    required: false
+    default: 'html'
+  parallelTests:
+    description: 'Enable parallel test execution'
+    required: false
+    default: 'false'
+  testTimeout:
+    description: 'Test timeout in seconds'
+    required: false
+    default: '60'
+  customDotnetArgs:
+    description: 'Custom arguments for dotnet build'
+    required: false
 
 outputs:
   lastMigration:
     description: 'The last applied database migration'
-  time:
-    description: Your output description here
+  startTime:
+    description: time when workflow started
+  endTime:
+    description: time when workflow finished
 
 runs:
   using: node20

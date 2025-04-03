@@ -27305,7 +27305,7 @@ var execExports = requireExec();
  * it applies them. Uses either a globally installed dotnet-ef tool or a local installation.
  *
  * @param envName - The ASP.NET Core environment name.
- * @param useGlobalDotnetEf - Location of global dotnet.
+ * @param dotnetRoot - Location of global dotnet.
  * @param useGlobalDotnetEf - Whether to use the global dotnet-ef installation.
  * @param migrationsFolder - The folder containing the migrations.
  * @param getExecOutput - Flag to determine the method of execution output.

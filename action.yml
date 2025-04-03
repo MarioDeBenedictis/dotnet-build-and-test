@@ -53,7 +53,7 @@ inputs:
   dotnetRoot:
     description: 'Environment name for ASP.NET Core'
     required: false
-    default: '/usr/share/dotnet'
+    default: '/usr/bin/dotnet'
   testFormat:
     description: 'Format for test results (e.g., trx, html, json)'
     required: false

@@ -27252,7 +27252,7 @@ function getInputs() {
     const envName = coreExports.getInput('envName') || 'Test';
     const skipMigrations = coreExports.getInput('skipMigrations') === 'true';
     const skipTests = coreExports.getInput('skipTests') === 'true';
-    const dotnetRoot = coreExports.getInput('dotnetRoot') || 'usr/share/dotnet';
+    const dotnetRoot = coreExports.getInput('dotnetRoot') || 'usr/bin/dotnet';
     const useGlobalDotnetEf = coreExports.getInput('useGlobalDotnetEf') === 'true';
     const skipWorkspaceRestore = coreExports.getInput('skipWorkspaceRestore') === 'true';
     const skipDotnetRestore = coreExports.getInput('skipDotnetRestore') === 'true';
@@ -27332,7 +27332,7 @@ async function processMigrations(envName, dotnetRoot, useGlobalDotnetEf, migrati
     else {
         coreExports.info('Installing dotnet-ef tool locally...');
         if (getExecOutput) {
-            await execExports.exec('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder, env: { DOTNET_ROOT: dotnetRoot } });
+            await execExports.exec('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder /*, env: { DOTNET_ROOT: dotnetRoot }*/ });
         }
         else {
             await execExports.getExecOutput('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder, env: { DOTNET_ROOT: dotnetRoot } });

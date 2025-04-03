@@ -26,7 +26,7 @@ export function getInputs(): ActionInputs {
   const envName: string = core.getInput('envName') || 'Test'
   const skipMigrations: boolean = core.getInput('skipMigrations') === 'true'
   const skipTests: boolean = core.getInput('skipTests') === 'true'
-  const dotnetRoot: string = core.getInput('dotnetRoot') || 'usr/share/dotnet'
+  const dotnetRoot: string = core.getInput('dotnetRoot') || 'usr/bin/dotnet'
   const useGlobalDotnetEf: boolean =
     core.getInput('useGlobalDotnetEf') === 'true'
   const skipWorkspaceRestore: boolean =

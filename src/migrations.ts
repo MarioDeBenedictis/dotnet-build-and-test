@@ -44,7 +44,7 @@ export async function processMigrations(
       await exec.exec(
         'dotnet',
         ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'],
-        { cwd: migrationsFolder, env: { DOTNET_ROOT: dotnetRoot } }
+        { cwd: migrationsFolder /*, env: { DOTNET_ROOT: dotnetRoot }*/ }
       )
     } else {
       await exec.getExecOutput(

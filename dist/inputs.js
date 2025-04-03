@@ -5,7 +5,7 @@ export function getInputs() {
     const envName = core.getInput('envName') || 'Test';
     const skipMigrations = core.getInput('skipMigrations') === 'true';
     const skipTests = core.getInput('skipTests') === 'true';
-    const dotnetRoot = core.getInput('dotnetRoot') || 'usr/share/dotnet';
+    const dotnetRoot = core.getInput('dotnetRoot') || 'usr/bin/dotnet';
     const useGlobalDotnetEf = core.getInput('useGlobalDotnetEf') === 'true';
     const skipWorkspaceRestore = core.getInput('skipWorkspaceRestore') === 'true';
     const skipDotnetRestore = core.getInput('skipDotnetRestore') === 'true';

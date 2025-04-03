@@ -32,7 +32,7 @@ export async function processMigrations(envName, dotnetRoot, useGlobalDotnetEf, 
     else {
         core.info('Installing dotnet-ef tool locally...');
         if (getExecOutput) {
-            await exec.exec('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder /*, env: { DOTNET_ROOT: dotnetRoot }*/ });
+            await exec.exec('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder, env: { DOTNET_ROOT: dotnetRoot } });
         }
         else {
             await exec.getExecOutput('dotnet', ['tool', 'install', 'dotnet-ef', '--tool-path', './.dotnetTools'], { cwd: migrationsFolder, env: { DOTNET_ROOT: dotnetRoot } });
